@@ -1,1 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Tracker</title>
+    <script>
+        function markDone(subtopicId) {
+            fetch("/update", {
+                method: "POST",
+                body: new URLSearchParams({ "subtopic_id": subtopicId }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            }).then(response => response.json())
+              .then(data => location.reload());
+        }
 
+        function addSubtopicField() {
+            const container = document.getElementById("subtopics-container");
+            const input = document.createElement("input");
+            input.type = "text";
+            input.name = "subtopics[]";
+            input.placeholder = "Subtopic Name";
+            container.appendChild(input);
+        }
+    </script>
+</head>
+<body>
+    <h1>Topic and Subtopics</h1>
+    
+    <h2>Add New Topic</h2>
+    <form method="POST" action="/add_topic">
+        <input type="text" name="topic_name" placeholder="Topic Name" required>
+        <div id="subtopics-container">
+            <input type="text" name="subtopics[]" placeholder="Subtopic Name">
+        </div>
+        <button type="button" onclick="addSubtopicField()">Add Another Subtopic</button>
+        <button type="submit">Add Topic</button>
+    </form>
+
+    <hr>
+
+    {% for topic in topics %}
+        <h2>{{ topic.name }} {% if topic.completed %} ✅ Completed at {{ topic.finished_at }} {% endif %}</h2> <hr>
+        <ul>
+            {% for subtopic in topic.subtopics %}
+                <li>
+                    <input type="checkbox" {% if subtopic[3] %} checked {% endif %}
+                           onclick="markDone({{ subtopic[0] }})"> 
+                    {{ subtopic[2] }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+</body>
+</html>
